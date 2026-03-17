@@ -1,15 +1,19 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <time.h>
 #include "piece.c"
 #include "primlib.h"
 
 #define SCREEN_W gfx_screenWidth()
 #define SCREEN_H gfx_screenHeight()
-#define CONTAINER_WIDTH 30
-#define CONTAINER_HEIGHT 40
+#define CONTAINER_WIDTH 15
+#define CONTAINER_HEIGHT 20
+#define PIECE_SIZE 4
 #define FRAME_DELAY_MS 16
-#define CELL_SIZE 10
-#define TOP_OFFSET 150
+#define CELL_SIZE 26
+#define NUMBER_OF_PIECES 7
+
 
 typedef struct{
     int type;
@@ -19,7 +23,7 @@ typedef struct{
 } Piece;
 
 typedef struct{
-    int board[CONTAINER_HEIGHT][CONTAINER_WIDTH];
+    char board[CONTAINER_HEIGHT][CONTAINER_WIDTH];
     int x1;
     int y1;
     int x2;
@@ -27,7 +31,14 @@ typedef struct{
 } Board;
 
 Board board;
+Piece currentPiece;
+Piece incomingPiece;
 
+void pickNewPiece(void){
+    currentPiece = incomingPiece;
+    incomingPiece.type = rand() % NUMBER_OF_PIECES;
+    incomingPiece.rotation = 0;
+}
 
 void drawBoard(void){
     gfx_rect(board.x1, board.y1, board.x2, board.y2, WHITE);
@@ -39,12 +50,30 @@ void drawScreen(void){
     drawBoard();
 }
 
+void populateGameState(){
+    for (int i = 0; i < CONTAINER_HEIGHT; i++){
+        for (int j = 0; j < CONTAINER_WIDTH; j++){
+            board.board[i][j] = 0;
+        }
+    }
+}
+
 void initGame(void){
     board.x1 = SCREEN_W/2 - CONTAINER_WIDTH*CELL_SIZE/2;
     board.x2 = SCREEN_W/2 + CONTAINER_WIDTH*CELL_SIZE/2;
-    board.y1 = SCREEN_H/2 - CONTAINER_HEIGHT*CELL_SIZE/2 - TOP_OFFSET;
+    board.y1 = SCREEN_H - CONTAINER_HEIGHT*CELL_SIZE;
     board.y2 = SCREEN_H - 1;
+    populateGameState();
+}
 
+void printGameState(void){
+    for (int i = 0; i < CONTAINER_HEIGHT; i++){
+        for (int j = 0; j < CONTAINER_WIDTH; j++){
+            printf("%d", atoi(&board.board[i][j]));
+        }
+        printf("\n");
+    }
+    system("clear");
 }
 
 int main(int argc, char *argv[]){
@@ -53,7 +82,8 @@ int main(int argc, char *argv[]){
     }
 
     bool running = 1;
-    int gameState[CONTAINER_HEIGHT][CONTAINER_WIDTH];
+    srand(time(NULL));
+
 
     initGame();
 
@@ -62,9 +92,10 @@ int main(int argc, char *argv[]){
         if (key == 'q'){
             running = !running;
         }
+        printGameState();
         drawScreen();
         gfx_updateScreen();
-        SDL_Delay(FRAME_DELAY_MS);
+        SDL_Delay(16);
     }while(running);
 
     return 0;
