@@ -1,3 +1,6 @@
+
+# Add -fsanitize=undefined
+
 CC = gcc
 CFLAGS = -g -Wall -pedantic -Wstrict-prototypes $(shell pkg-config --cflags sdl2 SDL2_gfx)
 LDLIBS = $(shell pkg-config --libs sdl2 SDL2_gfx) -lm
