@@ -14,20 +14,21 @@
 #define CELL_SIZE 36
 #define NUMBER_OF_PIECES 7
 #define FALL_COUNTER_MAXIMUM 30
-#define INCOMINGPIECE_X SCREEN_W/2 + CONTAINER_WIDTH*CELL_SIZE/2 + 2*CELL_SIZE
-#define INCOMINGPIECE_Y SCREEN_H - 4*CELL_SIZE
-#define SCORE_X SCREEN_W/10
-#define SCORE_Y SCREEN_H/10
+#define INCOMINGPIECE_X SCREEN_W / 2 + CONTAINER_WIDTH *CELL_SIZE / 2 + 2 * CELL_SIZE
+#define INCOMINGPIECE_Y SCREEN_H - 4 * CELL_SIZE
+#define SCORE_X SCREEN_W / 10
+#define SCORE_Y SCREEN_H / 10
 
-
-typedef struct{
+typedef struct
+{
     int type;
     int x;
     int y;
     int rotation;
 } Piece;
 
-typedef struct{
+typedef struct
+{
     int board[CONTAINER_HEIGHT][CONTAINER_WIDTH];
     int x1;
     int y1;
@@ -39,11 +40,16 @@ Board board;
 Piece currentPiece;
 Piece incomingPiece;
 int score = 0;
+bool gameOver = false;
 
-bool pieceFits(int nextX, int nextY, int nextRot) {
-    for (int py = 0; py < PIECE_SIZE; py++) {
-        for (int px = 0; px < PIECE_SIZE; px++){
-            if (pieces[currentPiece.type][nextRot][py][px] == 0){
+bool pieceFits(int nextX, int nextY, int nextRot)
+{
+    for (int py = 0; py < PIECE_SIZE; py++)
+    {
+        for (int px = 0; px < PIECE_SIZE; px++)
+        {
+            if (pieces[currentPiece.type][nextRot][py][px] == 0)
+            {
                 continue;
             }
 
@@ -51,11 +57,13 @@ bool pieceFits(int nextX, int nextY, int nextRot) {
             int boardY = nextY + py;
 
             if (boardX < 0 || boardX >= CONTAINER_WIDTH ||
-                boardY < 0 || boardY >= CONTAINER_HEIGHT) {
+                boardY < 0 || boardY >= CONTAINER_HEIGHT)
+            {
                 return false;
             }
 
-            if (board.board[boardY][boardX] != 0){
+            if (board.board[boardY][boardX] != 0)
+            {
                 return false;
             }
         }
@@ -63,39 +71,52 @@ bool pieceFits(int nextX, int nextY, int nextRot) {
     return true;
 }
 
-void clearGameState(void){
-    for (int y = 0; y < CONTAINER_HEIGHT; y++){
-        for (int x = 0; x < CONTAINER_WIDTH; x++){
+void clearGameState(void)
+{
+    for (int y = 0; y < CONTAINER_HEIGHT; y++)
+    {
+        for (int x = 0; x < CONTAINER_WIDTH; x++)
+        {
             board.board[y][x] = 0;
         }
     }
 }
 
-void clearRow(int r){
-    for (int x = 0; x < CONTAINER_WIDTH; x++){
+void clearRow(int r)
+{
+    for (int x = 0; x < CONTAINER_WIDTH; x++)
+    {
         board.board[r][x] = 0;
     }
 }
 
-void moveRows(int r){
-    for (int y = r; y > 0; y-- ){
-        for(int x = 0; x < CONTAINER_WIDTH; x++){
+void moveRows(int r)
+{
+    for (int y = r; y > 0; y--)
+    {
+        for (int x = 0; x < CONTAINER_WIDTH; x++)
+        {
             int prev = board.board[y][x];
-            board.board[y][x] = board.board[y-1][x];
-             board.board[y-1][x] = prev;
+            board.board[y][x] = board.board[y - 1][x];
+            board.board[y - 1][x] = prev;
         }
     }
 }
 
-void eraseFullRows(int *rowsCleared){
-    for (int y = 0; y < CONTAINER_HEIGHT; y++){
+void eraseFullRows(int *rowsCleared)
+{
+    for (int y = 0; y < CONTAINER_HEIGHT; y++)
+    {
         bool isFullRow = true;
-        for (int x = 0; x < CONTAINER_WIDTH; x++){
-            if (board.board[y][x] != 3){
+        for (int x = 0; x < CONTAINER_WIDTH; x++)
+        {
+            if (board.board[y][x] != 3)
+            {
                 isFullRow = false;
             }
         }
-        if (isFullRow){
+        if (isFullRow)
+        {
             (*rowsCleared)++;
             clearRow(y);
             moveRows(y);
@@ -103,19 +124,24 @@ void eraseFullRows(int *rowsCleared){
     }
 }
 
-void drawPreviewCell(int x, int y, enum color c){
+void drawPreviewCell(int x, int y, enum color c)
+{
     int x2 = x + CELL_SIZE - 1;
     int y2 = y + CELL_SIZE - 1;
 
     gfx_filledRect(x, y, x2, y2, c);
 }
 
-void drawIncomingPiece(void){
-    for (int py = 0; py < PIECE_SIZE; py++){
-        for (int px = 0; px < PIECE_SIZE; px++){
+void drawIncomingPiece(void)
+{
+    for (int py = 0; py < PIECE_SIZE; py++)
+    {
+        for (int px = 0; px < PIECE_SIZE; px++)
+        {
             char value = pieces[incomingPiece.type][incomingPiece.rotation][py][px];
 
-            if (value == 0) {
+            if (value == 0)
+            {
                 continue;
             }
 
@@ -128,28 +154,32 @@ void drawIncomingPiece(void){
     }
 }
 
-void drawCell(int col, int row, enum color c) {
+void drawCell(int col, int row, enum color c)
+{
     int x1 = board.x1 + col * CELL_SIZE;
     int y1 = board.y1 + row * CELL_SIZE;
     int x2 = x1 + CELL_SIZE - 1;
     int y2 = y1 + CELL_SIZE - 1;
 
-
     gfx_filledRect(x1, y1, x2, y2, c);
-
 }
 
-void drawBoardTiles(void){
-    for (int y = 0; y < CONTAINER_HEIGHT; y++){
-        for (int x = 0; x < CONTAINER_WIDTH; x++){
-            if (board.board[y][x] == 3){
-                drawCell(x,y, RED);
+void drawBoardTiles(void)
+{
+    for (int y = 0; y < CONTAINER_HEIGHT; y++)
+    {
+        for (int x = 0; x < CONTAINER_WIDTH; x++)
+        {
+            if (board.board[y][x] == 3)
+            {
+                drawCell(x, y, RED);
             }
         }
     }
 }
 
-void spawnPiece(void){
+void spawnPiece(void)
+{
     currentPiece.type = rand() % NUMBER_OF_PIECES;
     currentPiece.rotation = 0;
     currentPiece.x = CONTAINER_WIDTH / 2 - 2;
@@ -158,12 +188,16 @@ void spawnPiece(void){
 
 // TODO refactor for one function
 
-void drawCurrentPiece(void) {
-    for (int py = 0; py < PIECE_SIZE; py++) {
-        for (int px = 0; px < PIECE_SIZE; px++){
+void drawCurrentPiece(void)
+{
+    for (int py = 0; py < PIECE_SIZE; py++)
+    {
+        for (int px = 0; px < PIECE_SIZE; px++)
+        {
             char value = pieces[currentPiece.type][currentPiece.rotation][py][px];
 
-            if (value == 0) {
+            if (value == 0)
+            {
                 continue;
             }
 
@@ -173,9 +207,10 @@ void drawCurrentPiece(void) {
     }
 }
 
-void pickNewPiece(void){
+void pickNewPiece(void)
+{
     currentPiece = incomingPiece;
-    currentPiece.x = CONTAINER_WIDTH /2 - 2;
+    currentPiece.x = CONTAINER_WIDTH / 2 - 2;
     currentPiece.y = 0;
     currentPiece.rotation = 0;
 
@@ -185,10 +220,14 @@ void pickNewPiece(void){
     incomingPiece.y = 0;
 }
 
-void lockCurrentPiece(void){
-    for (int py = 0; py < PIECE_SIZE; py++){
-        for (int px = 0; px < PIECE_SIZE; px ++){
-            if (pieces[currentPiece.type][currentPiece.rotation][py][px] != 0){
+void lockCurrentPiece(void)
+{
+    for (int py = 0; py < PIECE_SIZE; py++)
+    {
+        for (int px = 0; px < PIECE_SIZE; px++)
+        {
+            if (pieces[currentPiece.type][currentPiece.rotation][py][px] != 0)
+            {
                 int boardX = currentPiece.x + px;
                 int boardY = currentPiece.y + py;
                 board.board[boardY][boardX] = 3;
@@ -197,44 +236,69 @@ void lockCurrentPiece(void){
     }
 }
 
-void lockAndRespawnPiece(void){
+void lockAndRespawnPiece(void)
+{
     lockCurrentPiece();
     pickNewPiece();
-    if (!pieceFits(currentPiece.x, currentPiece.y, currentPiece.rotation)){
-        clearGameState();
-        score = 0;
+    if (!pieceFits(currentPiece.x, currentPiece.y, currentPiece.rotation))
+    {
+        gameOver = true;
     }
 }
 
-void hardDropCurrentPiece(void){
-    while (pieceFits(currentPiece.x, currentPiece.y + 1, currentPiece.rotation)){
+void hardDropCurrentPiece(void)
+{
+    while (pieceFits(currentPiece.x, currentPiece.y + 1, currentPiece.rotation))
+    {
         currentPiece.y++;
     }
     lockAndRespawnPiece();
 }
 
-void drawBoard(void){
+void drawBoard(void)
+{
     gfx_rect(board.x1, board.y1, board.x2, board.y2, WHITE);
     gfx_line(board.x1, board.y1, board.x2, board.y1, BLACK);
 }
 
-void drawScreen(void){
-   gfx_filledRect(0, 0, SCREEN_W- 1, SCREEN_H - 1, BLACK);
+void drawScreen(void)
+{
+    gfx_filledRect(0, 0, SCREEN_W - 1, SCREEN_H - 1, BLACK);
     drawBoard();
 }
 
-void populateGameState(void){
-    for (int y = 0; y < CONTAINER_HEIGHT; y++){
-        for (int x = 0; x < CONTAINER_WIDTH; x++){
+void drawEndgameScreen(void)
+{
+    int centerX = SCREEN_W / 2;
+    int centerY = SCREEN_H / 2;
+
+    gfx_filledRect(centerX - 220, centerY - 90, centerX + 220, centerY + 90, BLUE);
+    gfx_rect(centerX - 220, centerY - 90, centerX + 220, centerY + 90, WHITE);
+    gfx_textout(centerX - 45, centerY - 60, "GAME OVER", WHITE);
+
+    char scoreText[40];
+    snprintf(scoreText, sizeof(scoreText), "Score: %d", score);
+    gfx_textout(centerX - 45, centerY - 20, scoreText, WHITE);
+    gfx_textout(centerX - 165, centerY + 20, "Press Enter to restart", WHITE);
+    gfx_textout(centerX - 130, centerY + 50, "Press Esc to quit", WHITE);
+}
+
+void populateGameState(void)
+{
+    for (int y = 0; y < CONTAINER_HEIGHT; y++)
+    {
+        for (int x = 0; x < CONTAINER_WIDTH; x++)
+        {
             board.board[y][x] = 0;
         }
     }
 }
 
-void initGame(void){
-    board.x1 = SCREEN_W/2 - CONTAINER_WIDTH*CELL_SIZE/2;
-    board.x2 = SCREEN_W/2 + CONTAINER_WIDTH*CELL_SIZE/2;
-    board.y1 = SCREEN_H - CONTAINER_HEIGHT*CELL_SIZE;
+void initGame(void)
+{
+    board.x1 = SCREEN_W / 2 - CONTAINER_WIDTH * CELL_SIZE / 2;
+    board.x2 = SCREEN_W / 2 + CONTAINER_WIDTH * CELL_SIZE / 2;
+    board.y1 = SCREEN_H - CONTAINER_HEIGHT * CELL_SIZE;
     board.y2 = SCREEN_H - 1;
 
     populateGameState();
@@ -242,58 +306,100 @@ void initGame(void){
     incomingPiece.type = rand() % NUMBER_OF_PIECES;
     incomingPiece.rotation = 0;
     pickNewPiece();
+    gameOver = false;
 }
 
-void handleInput(bool *running){
-        int key = gfx_pollkey();
-        if (key == SDLK_ESCAPE || key == SDLK_KP_ENTER){
-            *running = !*running;
+void handleInput(bool *running)
+{
+    int key = gfx_pollkey();
+
+    if (gameOver)
+    {
+        if (key == SDLK_ESCAPE)
+        {
+            *running = false;
         }
-        if (key == SDLK_LEFT && pieceFits(currentPiece.x - 1, currentPiece.y, currentPiece.rotation)){
-            currentPiece.x--;
+        if (key == SDLK_RETURN)
+        {
+            score = 0;
+            clearGameState();
+            initGame();
         }
-        if (key == SDLK_RIGHT && pieceFits(currentPiece.x + 1, currentPiece.y, currentPiece.rotation)){
-            currentPiece.x++;
-        }
-        if (key == SDLK_SPACE && pieceFits(currentPiece.x, currentPiece.y, (currentPiece.rotation + 1) % 4)){
-            currentPiece.rotation = (currentPiece.rotation + 1) % 4;
-        }
-        if (key == SDLK_DOWN){
-            hardDropCurrentPiece();
-        }
+        return;
+    }
+
+    if (key == SDLK_ESCAPE)
+    {
+        *running = false;
+    }
+    if (key == SDLK_LEFT && pieceFits(currentPiece.x - 1, currentPiece.y, currentPiece.rotation))
+    {
+        currentPiece.x--;
+    }
+    if (key == SDLK_RIGHT && pieceFits(currentPiece.x + 1, currentPiece.y, currentPiece.rotation))
+    {
+        currentPiece.x++;
+    }
+    if (key == SDLK_SPACE && pieceFits(currentPiece.x, currentPiece.y, (currentPiece.rotation + 1) % 4))
+    {
+        currentPiece.rotation = (currentPiece.rotation + 1) % 4;
+    }
+    if (key == SDLK_DOWN)
+    {
+        hardDropCurrentPiece();
+    }
 }
 
-void updateScore(int rows){
-    switch (rows) {
-        case 1:
-            score += 100;
+void updateScore(int rows)
+{
+    switch (rows)
+    {
+    case 1:
+        score += 100;
         break;
 
-        case 2:
-            score += 300;
+    case 2:
+        score += 300;
         break;
 
-        case 3:
-            score += 800;
+    case 3:
+        score += 800;
         break;
     }
 }
 
-void displayScore(void){
+void displayScore(void)
+{
     char str[20];
     sprintf(str, "%d", score);
     gfx_textout(SCORE_X, SCORE_Y, str, WHITE);
 }
 
-void gameLoop(bool *running, int *fallCounter){
+void gameLoop(bool *running, int *fallCounter)
+{
 
     handleInput(running);
 
+    if (gameOver)
+    {
+        drawScreen();
+        drawBoardTiles();
+        displayScore();
+        drawEndgameScreen();
+        gfx_updateScreen();
+        SDL_Delay(16);
+        return;
+    }
+
     (*fallCounter)++;
-    if (*fallCounter >= FALL_COUNTER_MAXIMUM){
-        if (pieceFits(currentPiece.x, currentPiece.y + 1, currentPiece.rotation)){
+    if (*fallCounter >= FALL_COUNTER_MAXIMUM)
+    {
+        if (pieceFits(currentPiece.x, currentPiece.y + 1, currentPiece.rotation))
+        {
             currentPiece.y++;
-        } else {
+        }
+        else
+        {
             lockAndRespawnPiece();
         }
         *fallCounter = 0;
@@ -312,8 +418,10 @@ void gameLoop(bool *running, int *fallCounter){
     SDL_Delay(16);
 }
 
-int main(int argc, char *argv[]){
-    if (gfx_init()){
+int main(int argc, char *argv[])
+{
+    if (gfx_init())
+    {
         exit(3);
     }
 
@@ -322,12 +430,12 @@ int main(int argc, char *argv[]){
 
     srand(time(NULL));
 
-
     initGame();
 
-    do{
+    do
+    {
         gameLoop(&running, &fallCounter);
-    }while(running);
+    } while (running);
 
     return 0;
 }
