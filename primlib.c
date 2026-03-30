@@ -75,12 +75,20 @@ void gfx_filledCircle(int x, int y, int r, enum color c)
 
 int gfx_screenWidth(void)
 {
-	return SCREEN_WIDTH;
+	int width = SCREEN_WIDTH;
+	if (window != NULL) {
+		SDL_GetWindowSize(window, &width, NULL);
+	}
+	return width;
 }
 
 int gfx_screenHeight(void)
 {
-	return SCREEN_HEIGHT;
+	int height = SCREEN_HEIGHT;
+	if (window != NULL) {
+		SDL_GetWindowSize(window, NULL, &height);
+	}
+	return height;
 }
 
 void gfx_updateScreen(void)
@@ -159,7 +167,7 @@ int gfx_init(void)
 
 	window = SDL_CreateWindow("SDL", SDL_WINDOWPOS_UNDEFINED,
 							  SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH,
-							  SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+							  SCREEN_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 	if (window == NULL) {
 		fprintf(stderr, "Window could not be created! SDL Error: %s\n",
 				SDL_GetError());

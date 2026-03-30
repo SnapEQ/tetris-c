@@ -7,19 +7,20 @@
 
 #define SCREEN_W gfx_screenWidth()
 #define SCREEN_H gfx_screenHeight()
-#define CONTAINER_WIDTH 12
-#define CONTAINER_HEIGHT 14
+#define CONTAINER_WIDTH 11
+#define CONTAINER_HEIGHT 15
 #define PIECE_SIZE 4
 #define FRAME_DELAY_MS 16
-#define CELL_SIZE 36
 #define NUMBER_OF_PIECES 7
 #define FALL_COUNTER_MAXIMUM 30
-#define INCOMINGPIECE_X SCREEN_W / 2 + CONTAINER_WIDTH * CELL_SIZE / 2 + 2 * CELL_SIZE
-#define INCOMINGPIECE_Y SCREEN_H - 4 * CELL_SIZE
-#define SCORE_X SCREEN_W / 10
-#define SCORE_Y SCREEN_H / 10
+#define BOARD_TOP_MARGIN 40
+#define BOARD_BOTTOM_MARGIN 20
+#define BOARD_SIDE_MARGIN 40
+#define PANEL_GAP 24
+#define PANEL_MIN_WIDTH 140
+#define MIN_CELL_SIZE 8
 
-extern int pieces[7][4][4][4];
+int pieces[7][4][4][4];
 
 typedef struct
 {
@@ -38,11 +39,49 @@ typedef struct
     int y2;
 } Board;
 
-static Board board;
-static Piece currentPiece;
-static Piece incomingPiece;
-static int score = 0;
-static bool gameOver = false;
+Board board;
+Piece currentPiece;
+Piece incomingPiece;
+int score = 0;
+bool gameOver = false;
+int cellSize = MIN_CELL_SIZE;
+int incomingPieceX = 0;
+int incomingPieceY = 0;
+int scoreX = 0;
+int scoreY = 0;
+
+int minInt(int a, int b)
+{
+    return (a < b) ? a : b;
+}
+
+int maxInt(int a, int b)
+{
+    return (a > b) ? a : b;
+}
+
+void updateLayout(void)
+{
+    int availableHeight = SCREEN_H - BOARD_TOP_MARGIN - BOARD_BOTTOM_MARGIN;
+    int availableWidth = SCREEN_W - 2 * BOARD_SIDE_MARGIN - 2 * PANEL_MIN_WIDTH - 2 * PANEL_GAP;
+
+    cellSize = minInt(availableHeight / CONTAINER_HEIGHT, availableWidth / CONTAINER_WIDTH);
+    cellSize = maxInt(cellSize, MIN_CELL_SIZE);
+
+    int boardWidth = CONTAINER_WIDTH * cellSize;
+    int boardHeight = CONTAINER_HEIGHT * cellSize;
+    int boardTop = maxInt(BOARD_TOP_MARGIN, (SCREEN_H - boardHeight) / 2);
+
+    board.x1 = (SCREEN_W - boardWidth) / 2;
+    board.x2 = board.x1 + boardWidth - 1;
+    board.y1 = boardTop;
+    board.y2 = board.y1 + boardHeight - 1;
+
+    scoreX = BOARD_SIDE_MARGIN;
+    scoreY = board.y1 + 20;
+    incomingPieceX = board.x2 + PANEL_GAP;
+    incomingPieceY = board.y1 + cellSize;
+}
 
 static bool pieceFits(int nextX, int nextY, int nextRot)
 {
@@ -73,7 +112,7 @@ static bool pieceFits(int nextX, int nextY, int nextRot)
     return true;
 }
 
-static void clearGameState(void)
+void clearGameState(void)
 {
     for (int y = 0; y < CONTAINER_HEIGHT; y++)
     {
@@ -84,7 +123,7 @@ static void clearGameState(void)
     }
 }
 
-static void clearRow(int r)
+void clearRow(int r)
 {
     for (int x = 0; x < CONTAINER_WIDTH; x++)
     {
@@ -92,7 +131,7 @@ static void clearRow(int r)
     }
 }
 
-static void moveRows(int r)
+void moveRows(int r)
 {
     for (int y = r; y > 0; y--)
     {
@@ -105,7 +144,7 @@ static void moveRows(int r)
     }
 }
 
-static void eraseFullRows(int *rowsCleared)
+void eraseFullRows(int *rowsCleared)
 {
     for (int y = 0; y < CONTAINER_HEIGHT; y++)
     {
@@ -126,15 +165,15 @@ static void eraseFullRows(int *rowsCleared)
     }
 }
 
-static void drawPreviewCell(int x, int y, enum color c)
+void drawPreviewCell(int x, int y, enum color c)
 {
-    int x2 = x + CELL_SIZE - 1;
-    int y2 = y + CELL_SIZE - 1;
+    int x2 = x + cellSize - 1;
+    int y2 = y + cellSize - 1;
 
     gfx_filledRect(x, y, x2, y2, c);
 }
 
-static void drawIncomingPiece(void)
+void drawIncomingPiece(void)
 {
     for (int py = 0; py < PIECE_SIZE; py++)
     {
@@ -148,25 +187,25 @@ static void drawIncomingPiece(void)
             }
 
             enum color color = (value == 2) ? YELLOW : GREEN;
-            int screenX = INCOMINGPIECE_X + px * CELL_SIZE;
-            int screenY = INCOMINGPIECE_Y + py * CELL_SIZE;
+            int screenX = incomingPieceX + px * cellSize;
+            int screenY = incomingPieceY + py * cellSize;
 
             drawPreviewCell(screenX, screenY, color);
         }
     }
 }
 
-static void drawCell(int col, int row, enum color c)
+void drawCell(int col, int row, enum color c)
 {
-    int x1 = board.x1 + col * CELL_SIZE;
-    int y1 = board.y1 + row * CELL_SIZE;
-    int x2 = x1 + CELL_SIZE - 1;
-    int y2 = y1 + CELL_SIZE - 1;
+    int x1 = board.x1 + col * cellSize;
+    int y1 = board.y1 + row * cellSize;
+    int x2 = x1 + cellSize - 1;
+    int y2 = y1 + cellSize - 1;
 
     gfx_filledRect(x1, y1, x2, y2, c);
 }
 
-static void drawBoardTiles(void)
+void drawBoardTiles(void)
 {
     for (int y = 0; y < CONTAINER_HEIGHT; y++)
     {
@@ -180,7 +219,7 @@ static void drawBoardTiles(void)
     }
 }
 
-static void pickNewPiece(void)
+void pickNewPiece(void)
 {
     currentPiece = incomingPiece;
     currentPiece.x = CONTAINER_WIDTH / 2 - 2;
@@ -193,7 +232,7 @@ static void pickNewPiece(void)
     incomingPiece.y = 0;
 }
 
-static void drawCurrentPiece(void)
+void drawCurrentPiece(void)
 {
     for (int py = 0; py < PIECE_SIZE; py++)
     {
@@ -212,7 +251,7 @@ static void drawCurrentPiece(void)
     }
 }
 
-static void lockCurrentPiece(void)
+void lockCurrentPiece(void)
 {
     for (int py = 0; py < PIECE_SIZE; py++)
     {
@@ -228,7 +267,7 @@ static void lockCurrentPiece(void)
     }
 }
 
-static void lockAndRespawnPiece(void)
+void lockAndRespawnPiece(void)
 {
     lockCurrentPiece();
     pickNewPiece();
@@ -238,7 +277,7 @@ static void lockAndRespawnPiece(void)
     }
 }
 
-static void hardDropCurrentPiece(void)
+void hardDropCurrentPiece(void)
 {
     while (pieceFits(currentPiece.x, currentPiece.y + 1, currentPiece.rotation))
     {
@@ -247,19 +286,20 @@ static void hardDropCurrentPiece(void)
     lockAndRespawnPiece();
 }
 
-static void drawBoard(void)
+void drawBoard(void)
 {
     gfx_rect(board.x1, board.y1, board.x2, board.y2, WHITE);
     gfx_line(board.x1, board.y1, board.x2, board.y1, BLACK);
 }
 
-static void drawScreen(void)
+void drawScreen(void)
 {
     gfx_filledRect(0, 0, SCREEN_W - 1, SCREEN_H - 1, BLACK);
     drawBoard();
+    gfx_textout(incomingPieceX, board.y1, "Next", WHITE);
 }
 
-static void drawEndgameScreen(void)
+void drawEndgameScreen(void)
 {
     int centerX = SCREEN_W / 2;
     int centerY = SCREEN_H / 2;
@@ -275,7 +315,7 @@ static void drawEndgameScreen(void)
     gfx_textout(centerX - 130, centerY + 50, "Press Esc to quit", WHITE);
 }
 
-static void handleInput(bool *running)
+void handleInput(bool *running)
 {
     int key = gfx_pollkey();
 
@@ -316,7 +356,7 @@ static void handleInput(bool *running)
     }
 }
 
-static void updateScore(int rows)
+void updateScore(int rows)
 {
     switch (rows)
     {
@@ -334,19 +374,16 @@ static void updateScore(int rows)
     }
 }
 
-static void displayScore(void)
+void displayScore(void)
 {
     char str[20];
-    sprintf(str, "%d", score);
-    gfx_textout(SCORE_X, SCORE_Y, str, WHITE);
+    snprintf(str, sizeof(str), "Score: %d", score);
+    gfx_textout(scoreX, scoreY, str, WHITE);
 }
 
 void initGame(void)
 {
-    board.x1 = SCREEN_W / 2 - CONTAINER_WIDTH * CELL_SIZE / 2;
-    board.x2 = SCREEN_W / 2 + CONTAINER_WIDTH * CELL_SIZE / 2;
-    board.y1 = SCREEN_H - CONTAINER_HEIGHT * CELL_SIZE;
-    board.y2 = SCREEN_H - 1;
+    updateLayout();
 
     clearGameState();
 
@@ -358,6 +395,7 @@ void initGame(void)
 
 void gameLoop(bool *running, int *fallCounter)
 {
+    updateLayout();
     handleInput(running);
 
     if (gameOver)
