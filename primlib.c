@@ -73,7 +73,7 @@ void gfx_filledCircle(int x, int y, int r, enum color c)
 					 255);
 }
 
-int gfx_screenWidth(void)
+int gfx_screenWidth()
 {
 	int width = SCREEN_WIDTH;
 	if (window != NULL) {
@@ -82,7 +82,7 @@ int gfx_screenWidth(void)
 	return width;
 }
 
-int gfx_screenHeight(void)
+int gfx_screenHeight()
 {
 	int height = SCREEN_HEIGHT;
 	if (window != NULL) {
@@ -91,7 +91,7 @@ int gfx_screenHeight(void)
 	return height;
 }
 
-void gfx_updateScreen(void)
+void gfx_updateScreen()
 {
 	SDL_RenderPresent(renderer);
 	SDL_RenderClear(renderer);
@@ -103,7 +103,7 @@ void gfx_textout(int x, int y, const char* s, enum color c)
 	stringRGBA(renderer, x, y, s, colors[c].r, colors[c].g, colors[c].b, 255);
 }
 
-int gfx_pollkey(void)
+int gfx_pollkey()
 {
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
@@ -117,7 +117,7 @@ int gfx_pollkey(void)
 	return -1;
 }
 
-int gfx_getkey(void)
+int gfx_getkey()
 {
 	SDL_Event event;
 	while (1) {
@@ -148,14 +148,14 @@ int gfx_isKeyDown(int key)
 	return keytable[code];
 }
 
-static void gfx_close(void)
+static void gfx_close()
 {
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
 }
 
-int gfx_init(void)
+int gfx_init()
 {
 
 	/* Initialize SDL */

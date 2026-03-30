@@ -7,8 +7,8 @@
 
 #define SCREEN_W gfx_screenWidth()
 #define SCREEN_H gfx_screenHeight()
-#define CONTAINER_WIDTH 11
-#define CONTAINER_HEIGHT 15
+#define CONTAINER_WIDTH 15
+#define CONTAINER_HEIGHT 18
 #define PIECE_SIZE 4
 #define FRAME_DELAY_MS 16
 #define NUMBER_OF_PIECES 7
@@ -60,7 +60,7 @@ int maxInt(int a, int b)
     return (a > b) ? a : b;
 }
 
-void updateLayout(void)
+void updateLayout()
 {
     int availableHeight = SCREEN_H - BOARD_TOP_MARGIN - BOARD_BOTTOM_MARGIN;
     int availableWidth = SCREEN_W - 2 * BOARD_SIDE_MARGIN - 2 * PANEL_MIN_WIDTH - 2 * PANEL_GAP;
@@ -112,7 +112,7 @@ static bool pieceFits(int nextX, int nextY, int nextRot)
     return true;
 }
 
-void clearGameState(void)
+void clearGameState()
 {
     for (int y = 0; y < CONTAINER_HEIGHT; y++)
     {
@@ -173,7 +173,7 @@ void drawPreviewCell(int x, int y, enum color c)
     gfx_filledRect(x, y, x2, y2, c);
 }
 
-void drawIncomingPiece(void)
+void drawIncomingPiece()
 {
     for (int py = 0; py < PIECE_SIZE; py++)
     {
@@ -205,7 +205,7 @@ void drawCell(int col, int row, enum color c)
     gfx_filledRect(x1, y1, x2, y2, c);
 }
 
-void drawBoardTiles(void)
+void drawBoardTiles()
 {
     for (int y = 0; y < CONTAINER_HEIGHT; y++)
     {
@@ -219,7 +219,7 @@ void drawBoardTiles(void)
     }
 }
 
-void pickNewPiece(void)
+void pickNewPiece()
 {
     currentPiece = incomingPiece;
     currentPiece.x = CONTAINER_WIDTH / 2 - 2;
@@ -232,7 +232,7 @@ void pickNewPiece(void)
     incomingPiece.y = 0;
 }
 
-void drawCurrentPiece(void)
+void drawCurrentPiece()
 {
     for (int py = 0; py < PIECE_SIZE; py++)
     {
@@ -251,7 +251,7 @@ void drawCurrentPiece(void)
     }
 }
 
-void lockCurrentPiece(void)
+void lockCurrentPiece()
 {
     for (int py = 0; py < PIECE_SIZE; py++)
     {
@@ -267,7 +267,7 @@ void lockCurrentPiece(void)
     }
 }
 
-void lockAndRespawnPiece(void)
+void lockAndRespawnPiece()
 {
     lockCurrentPiece();
     pickNewPiece();
@@ -277,7 +277,7 @@ void lockAndRespawnPiece(void)
     }
 }
 
-void hardDropCurrentPiece(void)
+void hardDropCurrentPiece()
 {
     while (pieceFits(currentPiece.x, currentPiece.y + 1, currentPiece.rotation))
     {
@@ -286,20 +286,20 @@ void hardDropCurrentPiece(void)
     lockAndRespawnPiece();
 }
 
-void drawBoard(void)
+void drawBoard()
 {
     gfx_rect(board.x1, board.y1, board.x2, board.y2, WHITE);
     gfx_line(board.x1, board.y1, board.x2, board.y1, BLACK);
 }
 
-void drawScreen(void)
+void drawScreen()
 {
     gfx_filledRect(0, 0, SCREEN_W - 1, SCREEN_H - 1, BLACK);
     drawBoard();
     gfx_textout(incomingPieceX, board.y1, "Next", WHITE);
 }
 
-void drawEndgameScreen(void)
+void drawEndgameScreen()
 {
     int centerX = SCREEN_W / 2;
     int centerY = SCREEN_H / 2;
@@ -374,14 +374,14 @@ void updateScore(int rows)
     }
 }
 
-void displayScore(void)
+void displayScore()
 {
     char str[20];
     snprintf(str, sizeof(str), "Score: %d", score);
     gfx_textout(scoreX, scoreY, str, WHITE);
 }
 
-void initGame(void)
+void initGame()
 {
     updateLayout();
 
