@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include "primlib.h"
 #include "tetris.h"
+#include "pieces.h"
 
 #define SCREEN_W gfx_screenWidth()
 #define SCREEN_H gfx_screenHeight()
@@ -19,8 +20,6 @@
 #define PANEL_GAP 24
 #define PANEL_MIN_WIDTH 140
 #define MIN_CELL_SIZE 8
-
-int pieces[7][4][4][4];
 
 typedef struct
 {
