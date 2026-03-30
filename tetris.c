@@ -432,7 +432,6 @@ void initGame()
 
 void gameLoop(bool *running, int *fallCounter)
 {
-    updateLayout();
     handleInput(running);
 
     if (gameOver)
