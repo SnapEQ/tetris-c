@@ -111,6 +111,25 @@ bool pieceFits(int nextX, int nextY, int nextRot)
     return true;
 }
 
+void getPiecePivot(int type, int rotation, int *pivotX, int *pivotY)
+{
+    for (int py = 0; py < PIECE_SIZE; py++)
+    {
+        for (int px = 0; px < PIECE_SIZE; px++)
+        {
+            if (pieces[type][rotation][py][px] == 2)
+            {
+                *pivotX = px;
+                *pivotY = py;
+                return;
+            }
+        }
+    }
+
+    *pivotX = 0;
+    *pivotY = 0;
+}
+
 void clearGameState()
 {
     for (int y = 0; y < CONTAINER_HEIGHT; y++)
@@ -345,9 +364,28 @@ void handleInput(bool *running)
     {
         currentPiece.x++;
     }
-    if (key == SDLK_SPACE && pieceFits(currentPiece.x, currentPiece.y, (currentPiece.rotation + 1) % 4))
+    if (key == SDLK_SPACE)
     {
-        currentPiece.rotation = (currentPiece.rotation + 1) % 4;
+        int nextRotation = (currentPiece.rotation + 1) % 4;
+        int currentPivotX;
+        int currentPivotY;
+        int nextPivotX;
+        int nextPivotY;
+        int nextX;
+        int nextY;
+
+        getPiecePivot(currentPiece.type, currentPiece.rotation, &currentPivotX, &currentPivotY);
+        getPiecePivot(currentPiece.type, nextRotation, &nextPivotX, &nextPivotY);
+
+        nextX = currentPiece.x + currentPivotX - nextPivotX;
+        nextY = currentPiece.y + currentPivotY - nextPivotY;
+
+        if (pieceFits(nextX, nextY, nextRotation))
+        {
+            currentPiece.x = nextX;
+            currentPiece.y = nextY;
+            currentPiece.rotation = nextRotation;
+        }
     }
     if (key == SDLK_DOWN)
     {
