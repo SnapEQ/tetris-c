@@ -83,7 +83,7 @@ void updateLayout()
     incomingPieceY = board.y1 + cellSize;
 }
 
-static bool pieceFits(int nextX, int nextY, int nextRot)
+bool pieceFits(int nextX, int nextY, int nextRot)
 {
     for (int py = 0; py < PIECE_SIZE; py++)
     {
