@@ -4,7 +4,6 @@
 #include <SDL2/SDL.h>
 #include "primlib.h"
 #include "tetris.h"
-#include "pieces.h"
 
 #define SCREEN_W gfx_screenWidth()
 #define SCREEN_H gfx_screenHeight()
@@ -49,17 +48,17 @@ int incomingPieceY = 0;
 int scoreX = 0;
 int scoreY = 0;
 
-int minInt(int a, int b)
+static int minInt(int a, int b)
 {
     return (a < b) ? a : b;
 }
 
-int maxInt(int a, int b)
+static int maxInt(int a, int b)
 {
     return (a > b) ? a : b;
 }
 
-void updateLayout()
+static void updateLayout()
 {
     int availableHeight = SCREEN_H - BOARD_TOP_MARGIN - BOARD_BOTTOM_MARGIN;
     int availableWidth = SCREEN_W - 2 * BOARD_SIDE_MARGIN - 2 * PANEL_MIN_WIDTH - 2 * PANEL_GAP;
@@ -82,7 +81,7 @@ void updateLayout()
     incomingPieceY = board.y1 + cellSize;
 }
 
-bool pieceFits(int nextX, int nextY, int nextRot)
+static bool pieceFits(int nextX, int nextY, int nextRot)
 {
     for (int py = 0; py < PIECE_SIZE; py++)
     {
@@ -111,7 +110,7 @@ bool pieceFits(int nextX, int nextY, int nextRot)
     return true;
 }
 
-void getPiecePivot(int type, int rotation, int *pivotX, int *pivotY)
+static void getPiecePivot(int type, int rotation, int *pivotX, int *pivotY)
 {
     for (int py = 0; py < PIECE_SIZE; py++)
     {
@@ -130,7 +129,7 @@ void getPiecePivot(int type, int rotation, int *pivotX, int *pivotY)
     *pivotY = 0;
 }
 
-void clearGameState()
+static void clearGameState()
 {
     for (int y = 0; y < CONTAINER_HEIGHT; y++)
     {
@@ -141,7 +140,7 @@ void clearGameState()
     }
 }
 
-void clearRow(int r)
+static void clearRow(int r)
 {
     for (int x = 0; x < CONTAINER_WIDTH; x++)
     {
@@ -149,7 +148,7 @@ void clearRow(int r)
     }
 }
 
-void moveRows(int r)
+static void moveRows(int r)
 {
     for (int y = r; y > 0; y--)
     {
@@ -162,7 +161,7 @@ void moveRows(int r)
     }
 }
 
-void eraseFullRows(int *rowsCleared)
+static void eraseFullRows(int *rowsCleared)
 {
     for (int y = 0; y < CONTAINER_HEIGHT; y++)
     {
@@ -183,7 +182,7 @@ void eraseFullRows(int *rowsCleared)
     }
 }
 
-void drawPreviewCell(int x, int y, enum color c)
+static void drawPreviewCell(int x, int y, enum color c)
 {
     int x2 = x + cellSize - 1;
     int y2 = y + cellSize - 1;
@@ -191,7 +190,7 @@ void drawPreviewCell(int x, int y, enum color c)
     gfx_filledRect(x, y, x2, y2, c);
 }
 
-void drawIncomingPiece()
+static void drawIncomingPiece()
 {
     for (int py = 0; py < PIECE_SIZE; py++)
     {
@@ -213,7 +212,7 @@ void drawIncomingPiece()
     }
 }
 
-void drawCell(int col, int row, enum color c)
+static void drawCell(int col, int row, enum color c)
 {
     int x1 = board.x1 + col * cellSize;
     int y1 = board.y1 + row * cellSize;
@@ -223,7 +222,7 @@ void drawCell(int col, int row, enum color c)
     gfx_filledRect(x1, y1, x2, y2, c);
 }
 
-void drawBoardTiles()
+static void drawBoardTiles()
 {
     for (int y = 0; y < CONTAINER_HEIGHT; y++)
     {
@@ -237,7 +236,7 @@ void drawBoardTiles()
     }
 }
 
-void pickNewPiece()
+static void pickNewPiece()
 {
     currentPiece = incomingPiece;
     currentPiece.x = CONTAINER_WIDTH / 2 - 2;
@@ -250,7 +249,7 @@ void pickNewPiece()
     incomingPiece.y = 0;
 }
 
-void drawCurrentPiece()
+static void drawCurrentPiece()
 {
     for (int py = 0; py < PIECE_SIZE; py++)
     {
@@ -269,7 +268,7 @@ void drawCurrentPiece()
     }
 }
 
-void lockCurrentPiece()
+static void lockCurrentPiece()
 {
     for (int py = 0; py < PIECE_SIZE; py++)
     {
@@ -285,7 +284,7 @@ void lockCurrentPiece()
     }
 }
 
-void lockAndRespawnPiece()
+static void lockAndRespawnPiece()
 {
     lockCurrentPiece();
     pickNewPiece();
@@ -295,7 +294,7 @@ void lockAndRespawnPiece()
     }
 }
 
-void hardDropCurrentPiece()
+static void hardDropCurrentPiece()
 {
     while (pieceFits(currentPiece.x, currentPiece.y + 1, currentPiece.rotation))
     {
@@ -304,20 +303,20 @@ void hardDropCurrentPiece()
     lockAndRespawnPiece();
 }
 
-void drawBoard()
+static void drawBoard()
 {
     gfx_rect(board.x1, board.y1, board.x2, board.y2, WHITE);
     gfx_line(board.x1, board.y1, board.x2, board.y1, BLACK);
 }
 
-void drawScreen()
+static void drawScreen()
 {
     gfx_filledRect(0, 0, SCREEN_W - 1, SCREEN_H - 1, BLACK);
     drawBoard();
     gfx_textout(incomingPieceX, board.y1, "Next", WHITE);
 }
 
-void drawEndgameScreen()
+static void drawEndgameScreen()
 {
     int centerX = SCREEN_W / 2;
     int centerY = SCREEN_H / 2;
@@ -333,7 +332,7 @@ void drawEndgameScreen()
     gfx_textout(centerX - 130, centerY + 50, "Press Esc to quit", WHITE);
 }
 
-void handleInput(bool *running)
+static void handleInput(bool *running)
 {
     int key = gfx_pollkey();
 
@@ -393,7 +392,7 @@ void handleInput(bool *running)
     }
 }
 
-void updateScore(int rows)
+static void updateScore(int rows)
 {
     switch (rows)
     {
@@ -408,10 +407,16 @@ void updateScore(int rows)
     case 3:
         score += 800;
         break;
-    }
-}
 
-void displayScore()
+    case 4:
+        score += 1200;
+        break;
+
+    }
+
+    }
+
+static void displayScore()
 {
     char str[20];
     snprintf(str, sizeof(str), "Score: %d", score);
